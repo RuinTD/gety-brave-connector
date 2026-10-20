@@ -6,7 +6,7 @@ import {
 	buildBookmarkDoc,
 	buildHistoryDoc,
 	computeDeletes,
-	defaultChromeProfileDir,
+	defaultBraveProfileDir,
 	flattenBookmarks,
 	historyCutoffWebkitMicros,
 	historyDocId,
@@ -46,43 +46,51 @@ Deno.test('isWebUrl only accepts http(s)', () => {
 	assert.equal(isWebUrl('https://example.com/'), true);
 	assert.equal(isWebUrl('http://example.com/'), true);
 	assert.equal(isWebUrl('chrome://bookmarks/'), false);
+	assert.equal(isWebUrl('brave://bookmarks/'), false);
 	assert.equal(isWebUrl('file:///etc/hosts'), false);
 	assert.equal(isWebUrl(''), false);
 });
 
-Deno.test('defaultChromeProfileDir resolves per-OS paths', () => {
+Deno.test('defaultBraveProfileDir resolves per-OS paths', () => {
 	const home = '/home/tester';
 	assert.equal(
-		defaultChromeProfileDir('linux', home),
-		join(home, '.config', 'google-chrome', 'Default'),
+		defaultBraveProfileDir('linux', home),
+		join(home, '.config', 'BraveSoftware', 'Brave-Browser', 'Default'),
 	);
 	assert.equal(
-		defaultChromeProfileDir('darwin', home),
-		join(home, 'Library', 'Application Support', 'Google', 'Chrome', 'Default'),
+		defaultBraveProfileDir('darwin', home),
+		join(
+			home,
+			'Library',
+			'Application Support',
+			'BraveSoftware',
+			'Brave-Browser',
+			'Default',
+		),
 	);
 	// Windows honors LOCALAPPDATA and falls back to AppData/Local.
 	assert.equal(
-		defaultChromeProfileDir(
+		defaultBraveProfileDir(
 			'win32',
 			'C:/Users/me',
 			'C:/Users/me/AppData/Local',
 		),
 		join(
 			'C:/Users/me/AppData/Local',
-			'Google',
-			'Chrome',
+			'BraveSoftware',
+			'Brave-Browser',
 			'User Data',
 			'Default',
 		),
 	);
 	assert.equal(
-		defaultChromeProfileDir('win32', '/home/tester'),
+		defaultBraveProfileDir('win32', '/home/tester'),
 		join(
 			'/home/tester',
 			'AppData',
 			'Local',
-			'Google',
-			'Chrome',
+			'BraveSoftware',
+			'Brave-Browser',
 			'User Data',
 			'Default',
 		),
@@ -172,8 +180,8 @@ Deno.test('buildBookmarkDoc emits a linkable web doc', () => {
 		dateModified: null,
 	};
 	const doc = buildBookmarkDoc(entry);
-	assert.equal(doc.id, 'chrome:bookmark:g1');
-	assert.equal(doc.doc_type, 'chrome:bookmark');
+	assert.equal(doc.id, 'brave:bookmark:g1');
+	assert.equal(doc.doc_type, 'brave:bookmark');
 	assert.equal(doc.content_format, 'plaintext');
 	assert.equal(doc.doc_updated_at, '1970-01-01T00:00:00.000Z');
 	const meta = doc.metadata as Record<string, unknown>;
@@ -187,7 +195,7 @@ Deno.test('buildBookmarkDoc omits url metadata for non-web bookmarks', () => {
 	const doc = buildBookmarkDoc({
 		guid: 'g2',
 		name: 'Bookmarks',
-		url: 'chrome://bookmarks/',
+		url: 'brave://bookmarks/',
 		folder: 'Bookmarks bar',
 		dateAdded: null,
 		dateModified: null,
@@ -204,8 +212,8 @@ Deno.test('buildHistoryDoc hashes the url into a stable id', () => {
 		visitCount: 7,
 		lastVisit: WEBKIT_UNIX_EPOCH,
 	});
-	assert.equal(doc.id, `chrome:history:${sha1Hex('https://example.com/page')}`);
-	assert.equal(doc.doc_type, 'chrome:history');
+	assert.equal(doc.id, `brave:history:${sha1Hex('https://example.com/page')}`);
+	assert.equal(doc.doc_type, 'brave:history');
 	assert.equal(doc.doc_updated_at, '1970-01-01T00:00:00.000Z');
 	const meta = doc.metadata as Record<string, unknown>;
 	assert.equal(meta.url, 'https://example.com/page');
@@ -232,10 +240,10 @@ Deno.test('computeDeletes returns ids no longer present', () => {
 });
 
 Deno.test('doc id helpers are stable', () => {
-	assert.equal(bookmarkDocId('xyz'), 'chrome:bookmark:xyz');
+	assert.equal(bookmarkDocId('xyz'), 'brave:bookmark:xyz');
 	assert.equal(
 		historyDocId('https://x/'),
-		`chrome:history:${sha1Hex('https://x/')}`,
+		`brave:history:${sha1Hex('https://x/')}`,
 	);
 	assert.equal(sha1Hex('abc'), 'a9993e364706816aba3e25717850c26c9cd0d89d');
 });

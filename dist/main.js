@@ -17,8 +17,8 @@ import process from "node:process";
 import { createHash } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 var WEBKIT_UNIX_OFFSET_MICROS = 11644473600000000n;
-var DOC_TYPE_BOOKMARK = "chrome:bookmark";
-var DOC_TYPE_HISTORY = "chrome:history";
+var DOC_TYPE_BOOKMARK = "brave:bookmark";
+var DOC_TYPE_HISTORY = "brave:history";
 var HISTORY_BATCH_SIZE = 500;
 function webkitMicrosToRfc3339(micros) {
   if (micros <= 0n) return null;
@@ -41,23 +41,29 @@ function parseWebkitTimestamp(value) {
 function isWebUrl(url) {
   return /^https?:\/\//i.test(url);
 }
-function defaultChromeProfileDir(os, home, localAppData) {
+function defaultBraveProfileDir(os, home, localAppData) {
   switch (os) {
     case "darwin":
       return join(
         home,
         "Library",
         "Application Support",
-        "Google",
-        "Chrome",
+        "BraveSoftware",
+        "Brave-Browser",
         "Default"
       );
     case "win32": {
       const base = localAppData && localAppData.trim() ? localAppData : join(home, "AppData", "Local");
-      return join(base, "Google", "Chrome", "User Data", "Default");
+      return join(
+        base,
+        "BraveSoftware",
+        "Brave-Browser",
+        "User Data",
+        "Default"
+      );
     }
     default:
-      return join(home, ".config", "google-chrome", "Default");
+      return join(home, ".config", "BraveSoftware", "Brave-Browser", "Default");
   }
 }
 function historyRangeToMaxAgeDays(range) {
@@ -86,10 +92,10 @@ function sha1Hex(value) {
   return createHash("sha1").update(value).digest("hex");
 }
 function bookmarkDocId(guid) {
-  return `chrome:bookmark:${guid}`;
+  return `brave:bookmark:${guid}`;
 }
 function historyDocId(url) {
-  return `chrome:history:${sha1Hex(url)}`;
+  return `brave:history:${sha1Hex(url)}`;
 }
 var ROOT_LABELS = {
   bookmark_bar: "Bookmarks bar",
@@ -189,9 +195,9 @@ function computeDeletes(previousIds, currentIds) {
   }
   return deletes;
 }
-var ChromeConnector = class extends Connector {
+var BraveConnector = class extends Connector {
   async *poll() {
-    const profileDir = defaultChromeProfileDir(
+    const profileDir = defaultBraveProfileDir(
       platform(),
       homedir(),
       process.env.LOCALAPPDATA
@@ -271,7 +277,7 @@ var ChromeConnector = class extends Connector {
       Date.now()
     );
     const prevCursor = parseWebkitTimestamp(prev.history_cursor);
-    const tmpRoot = mkdtempSync(join(tmpdir(), "gety-chrome-"));
+    const tmpRoot = mkdtempSync(join(tmpdir(), "gety-brave-"));
     const tmpDb = join(tmpRoot, "History");
     try {
       copyFileSync(historyPath, tmpDb);
@@ -342,8 +348,8 @@ export {
   buildBookmarkDoc,
   buildHistoryDoc,
   computeDeletes,
-  ChromeConnector as default,
-  defaultChromeProfileDir,
+  BraveConnector as default,
+  defaultBraveProfileDir,
   flattenBookmarks,
   historyCutoffWebkitMicros,
   historyDocId,

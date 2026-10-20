@@ -20,12 +20,12 @@ import process from 'node:process';
 import { createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 
-// Chrome/WebKit timestamps count microseconds since 1601-01-01 UTC.
+// Chromium/WebKit timestamps count microseconds since 1601-01-01 UTC.
 // Subtract the offset to 1970-01-01 to get a Unix timestamp.
 const WEBKIT_UNIX_OFFSET_MICROS = 11644473600000000n;
 
-const DOC_TYPE_BOOKMARK = 'chrome:bookmark';
-const DOC_TYPE_HISTORY = 'chrome:history';
+const DOC_TYPE_BOOKMARK = 'brave:bookmark';
+const DOC_TYPE_HISTORY = 'brave:history';
 const HISTORY_BATCH_SIZE = 500;
 
 type State = {
@@ -70,11 +70,11 @@ export function isWebUrl(url: string): boolean {
 }
 
 /**
- * Default Chrome "Default" profile directory for the host OS. The connector
+ * Default Brave "Default" profile directory for the host OS. The connector
  * targets whatever platform it runs on, so the profile location is built in
  * rather than configured.
  */
-export function defaultChromeProfileDir(
+export function defaultBraveProfileDir(
 	os: string,
 	home: string,
 	localAppData?: string,
@@ -85,18 +85,24 @@ export function defaultChromeProfileDir(
 				home,
 				'Library',
 				'Application Support',
-				'Google',
-				'Chrome',
+				'BraveSoftware',
+				'Brave-Browser',
 				'Default',
 			);
 		case 'win32': {
 			const base = localAppData && localAppData.trim()
 				? localAppData
 				: join(home, 'AppData', 'Local');
-			return join(base, 'Google', 'Chrome', 'User Data', 'Default');
+			return join(
+				base,
+				'BraveSoftware',
+				'Brave-Browser',
+				'User Data',
+				'Default',
+			);
 		}
 		default: // linux and other unix-likes
-			return join(home, '.config', 'google-chrome', 'Default');
+			return join(home, '.config', 'BraveSoftware', 'Brave-Browser', 'Default');
 	}
 }
 
@@ -134,11 +140,11 @@ export function sha1Hex(value: string): string {
 }
 
 export function bookmarkDocId(guid: string): string {
-	return `chrome:bookmark:${guid}`;
+	return `brave:bookmark:${guid}`;
 }
 
 export function historyDocId(url: string): string {
-	return `chrome:history:${sha1Hex(url)}`;
+	return `brave:history:${sha1Hex(url)}`;
 }
 
 export interface BookmarkEntry {
@@ -284,9 +290,9 @@ export function computeDeletes(
 // Connector
 // --------------------------------------------------------------------------
 
-export default class ChromeConnector extends Connector<ManifestConfig, State> {
+export default class BraveConnector extends Connector<ManifestConfig, State> {
 	async *poll(): AsyncGenerator<PollResult, void, unknown> {
-		const profileDir = defaultChromeProfileDir(
+		const profileDir = defaultBraveProfileDir(
 			platform(),
 			homedir(),
 			process.env.LOCALAPPDATA,
@@ -393,10 +399,10 @@ export default class ChromeConnector extends Connector<ManifestConfig, State> {
 		);
 		const prevCursor = parseWebkitTimestamp(prev.history_cursor);
 
-		// Chrome locks the live DB and may keep recent writes in a WAL, so copy
+		// Chromium locks the live DB and may keep recent writes in a WAL, so copy
 		// History (+ -wal/-shm) to a throwaway dir and open the copy read-write
 		// so SQLite can apply the WAL.
-		const tmpRoot = mkdtempSync(join(tmpdir(), 'gety-chrome-'));
+		const tmpRoot = mkdtempSync(join(tmpdir(), 'gety-brave-'));
 		const tmpDb = join(tmpRoot, 'History');
 		try {
 			copyFileSync(historyPath, tmpDb);

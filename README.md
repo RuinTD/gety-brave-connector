@@ -1,6 +1,6 @@
-# Google Chrome Connector for Gety
+# Brave Browser Connector for Gety
 
-Indexes a local Google Chrome profile into Gety:
+Indexes a local Brave Browser profile into Gety:
 
 - **Bookmarks** — from the profile's `Bookmarks` JSON file, with folder
   breadcrumbs (`Bookmarks bar / design`) as searchable context.
@@ -8,19 +8,19 @@ Indexes a local Google Chrome profile into Gety:
   table), with a configurable scope.
 
 Each document links back to the page URL (`doc_link → metadata.url`), so opening
-a result launches it in the browser. Chrome does not store page body text, so
+a result launches it in the browser. Brave does not store page body text, so
 documents are searchable by **title, URL, and bookmark folder** — not full page
 content.
 
 ## Documents
 
-| Source   | `doc_type`        | `id`                         | `doc_updated_at`             | Link           |
-| -------- | ----------------- | ---------------------------- | ---------------------------- | -------------- |
-| Bookmark | `chrome:bookmark` | `chrome:bookmark:<guid>`     | `date_modified`/`date_added` | `metadata.url` |
-| History  | `chrome:history`  | `chrome:history:<sha1(url)>` | `last_visit_time`            | `metadata.url` |
+| Source   | `doc_type`       | `id`                        | `doc_updated_at`             | Link           |
+| -------- | ---------------- | --------------------------- | ---------------------------- | -------------- |
+| Bookmark | `brave:bookmark` | `brave:bookmark:<guid>`     | `date_modified`/`date_added` | `metadata.url` |
+| History  | `brave:history`  | `brave:history:<sha1(url)>` | `last_visit_time`            | `metadata.url` |
 
-Timestamps are converted from Chrome's WebKit epoch (microseconds since
-1601-01-01) to RFC 3339. Non-`http(s)` URLs (e.g. `chrome://`) get no link.
+Timestamps are converted from Chromium's WebKit epoch (microseconds since
+1601-01-01) to RFC 3339. Non-`http(s)` URLs (e.g. `brave://`) get no link.
 
 ## Configuration
 
@@ -31,14 +31,14 @@ Timestamps are converted from Chrome's WebKit epoch (microseconds since
 | `history_range`        | dropdown | required | `7d` · `30d` · `90d` · `365d` · `all` — how far back. |
 | `history_skip_non_web` | checkbox | `true`   | Skip non-`http(s)` history URLs.                      |
 
-The Chrome **Default** profile directory is detected from the host OS — there is
+The Brave **Default** profile directory is detected from the host OS — there is
 no profile setting:
 
-| OS      | Profile directory                                     |
-| ------- | ----------------------------------------------------- |
-| Linux   | `~/.config/google-chrome/Default`                     |
-| macOS   | `~/Library/Application Support/Google/Chrome/Default` |
-| Windows | `%LOCALAPPDATA%\Google\Chrome\User Data\Default`      |
+| OS      | Profile directory                                                   |
+| ------- | ------------------------------------------------------------------- |
+| Linux   | `~/.config/BraveSoftware/Brave-Browser/Default`                     |
+| macOS   | `~/Library/Application Support/BraveSoftware/Brave-Browser/Default` |
+| Windows | `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\Default`      |
 
 `history_range` indexes only pages whose last visit falls within the window
 (`all` removes the window). Pages never actually loaded are skipped.
@@ -52,7 +52,7 @@ no profile setting:
 - **Deletes stay in sync**: the connector remembers indexed ids in state and
   emits `del()` for bookmarks/history that disappear or fall out of scope.
 
-Chrome keeps the live `History` DB locked and may hold recent writes in a WAL,
+Chromium keeps the live `History` DB locked and may hold recent writes in a WAL,
 so each poll copies `History` (+ `-wal`/`-shm`) to a temp dir and reads the
 copy.
 

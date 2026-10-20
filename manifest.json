@@ -1,13 +1,13 @@
 {
-	"id": "chrome",
-	"name": "Google Chrome",
+	"id": "brave",
+	"name": "Brave Browser",
 	"version": "0.1.0",
 	"min_gety_app_version": "0.5.1",
 	"entry": "dist/main.js",
 	"icon": "icon.png",
-	"description": "Indexes Google Chrome bookmarks and browsing history from a local Chrome profile.",
+	"description": "Indexes Brave Browser bookmarks and browsing history from a local Brave profile.",
 	"author": {
-		"name": "yuche"
+		"name": "RuinTD"
 	},
 	"capabilities": ["data-source"],
 	"schedule": {
@@ -79,7 +79,7 @@
 				"type": "checkbox",
 				"required": false,
 				"default_value": true,
-				"description": "Skip history entries that are not http(s) URLs (e.g. chrome://, file://, about:)."
+				"description": "Skip history entries that are not http(s) URLs (e.g. brave://, file://, about:)."
 			}
 		]
 	}
